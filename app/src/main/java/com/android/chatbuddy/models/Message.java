@@ -9,11 +9,13 @@ public class Message {
     private long timestamp;
     private String type; // text, image, etc.
 
+    // Required empty constructor for Firebase
     public Message() {
-        // Required empty constructor for Firebase
     }
 
-    public Message(String sender, String receiver, String message, boolean seen, long timestamp, String type) {
+    // Constructor for message initialization
+    public Message(String id, String sender, String receiver, String message, boolean seen, long timestamp, String type) {
+        this.id = id;
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
@@ -43,9 +45,4 @@ public class Message {
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
-
-    // Fixed the method to return sender ID
-    public String getSenderId() {
-        return sender;
-    }
 }

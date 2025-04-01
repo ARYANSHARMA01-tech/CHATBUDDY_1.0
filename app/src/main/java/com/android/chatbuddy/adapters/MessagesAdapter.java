@@ -85,7 +85,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     @Override
     public int getItemViewType(int position) {
-        return messageList.get(position).getSenderId().equals(currentUserId) ? MSG_TYPE_RIGHT : MSG_TYPE_LEFT;
+        return messageList.get(position).getSender().equals(currentUserId) ? MSG_TYPE_RIGHT : MSG_TYPE_LEFT;
+
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

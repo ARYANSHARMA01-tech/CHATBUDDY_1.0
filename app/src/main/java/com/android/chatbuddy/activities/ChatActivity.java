@@ -17,24 +17,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.chatbuddy.R;
 import com.android.chatbuddy.adapters.MessagesAdapter;
-import com.android.chatbuddy.models.Chat;
 import com.android.chatbuddy.models.Message;
 import com.android.chatbuddy.models.User;
 import com.android.chatbuddy.utils.FirebaseUtils;
-import com.squareup.picasso.Picasso;  // ✅ Import Fixed
+import com.squareup.picasso.Picasso;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
     private ImageView profileImage;
-    private TextView username;
-    private TextView userStatus;
+    private TextView username, userStatus;
     private RecyclerView recyclerView;
     private EditText messageInput;
     private ImageButton btnSend;
@@ -42,10 +39,8 @@ public class ChatActivity extends AppCompatActivity {
     private MessagesAdapter messagesAdapter;
     private List<Message> messageList;
 
-    private String receiverId;
-    private String currentUserId;
-    private DatabaseReference messagesRef;
-    private DatabaseReference chatsRef;
+    private String receiverId, currentUserId;
+    private DatabaseReference messagesRef, chatsRef;
     private ValueEventListener seenListener;
 
     @Override
@@ -66,9 +61,7 @@ public class ChatActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btn_send);
 
         recyclerView.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         receiverId = getIntent().getStringExtra("userId");
         currentUserId = FirebaseUtils.getCurrentUserId();
@@ -76,117 +69,107 @@ public class ChatActivity extends AppCompatActivity {
         messagesRef = FirebaseUtils.getMessagesRef();
         chatsRef = FirebaseUtils.getChatsRef();
 
-        btnSend.setOnClickListener(v -> {
-            String msg = messageInput.getText().toString().trim();
-            if (!TextUtils.isEmpty(msg)) {
-                sendMessage(currentUserId, receiverId, msg);
-            } else {
-                Toast.makeText(ChatActivity.this, "You can't send an empty message", Toast.LENGTH_SHORT).show();
-            }
-            messageInput.setText("");
-        });
-
-        FirebaseUtils.getUsersRef().child(receiverId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                username.setText(user.getUsername());
-
-                if (user.isOnline()) {
-                    userStatus.setText("Online");
-                } else if (user.getLastSeen() != null) {
-                    userStatus.setText("Last seen: " + user.getLastSeen());
-                }
-
-                if (user.getImageURL().equals("default")) {
-                    profileImage.setImageResource(R.drawable.default_profile);
-                } else {
-                    Picasso.get().load(user.getImageURL()).into(profileImage);  // ✅ Picasso Fix Applied
-                }
-
-                readMessages();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
-
+        btnSend.setOnClickListener(v -> sendMessage());
+        loadReceiverInfo();
+        readMessages();
         seenMessage();
+    }
+
+    private void loadReceiverInfo() {
+        FirebaseUtils.getUsersRef().child(receiverId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                if (user != null) {
+                    username.setText(user.getUsername());
+                    userStatus.setText(user.isOnline() ? "Online" : "Last seen: " + user.getLastSeen());
+                    if ("default".equals(user.getImageURL())) {
+                        profileImage.setImageResource(R.drawable.default_profile);
+                    } else {
+                        Picasso.get().load(user.getImageURL()).into(profileImage);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     private void seenMessage() {
         seenListener = messagesRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Message message = snapshot.getValue(Message.class);
-                    if (message.getReceiver().equals(currentUserId) && message.getSender().equals(receiverId)) {
-                        HashMap<String, Object> hashMap = new HashMap<>();
-                        hashMap.put("seen", true);
-                        snapshot.getRef().updateChildren(hashMap);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Message message = snap.getValue(Message.class);
+                    if (message != null && message.getReceiver().equals(currentUserId) && message.getSender().equals(receiverId)) {
+                        snap.getRef().child("seen").setValue(true);
                     }
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    private void sendMessage(String sender, String receiver, String message) {
-        DatabaseReference reference = FirebaseUtils.getMessagesRef();
-        String messageId = reference.push().getKey();
+    private void sendMessage() {
+        String msg = messageInput.getText().toString().trim();
+        if (TextUtils.isEmpty(msg)) {
+            Toast.makeText(this, "You can't send an empty message", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        messageInput.setText("");
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("id", messageId);
-        hashMap.put("sender", sender);
-        hashMap.put("receiver", receiver);
-        hashMap.put("message", message);
-        hashMap.put("seen", false);
-        hashMap.put("timestamp", System.currentTimeMillis());
-        hashMap.put("type", "text");
+        String messageId = messagesRef.push().getKey();
+        if (messageId == null) return; // Prevent null ID issue
 
-        reference.child(messageId).setValue(hashMap);
-        addToChat(sender, receiver, message);
-        addToChat(receiver, sender, message);
+        Message message = new Message(messageId, currentUserId, receiverId, msg, false, System.currentTimeMillis(), "text");
+        messagesRef.child(messageId).setValue(message)
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Toast.makeText(ChatActivity.this, "Failed to send message", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        updateChatList();
     }
 
-    private void addToChat(String currentUser, String chatUser, String lastMessage) {
-        DatabaseReference chatRef = FirebaseUtils.getChatsRef().child(currentUser).child(chatUser);
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("userId", chatUser);
-        hashMap.put("lastMessage", lastMessage);
-        hashMap.put("timestamp", System.currentTimeMillis());
-        hashMap.put("seen", currentUser.equals(FirebaseUtils.getCurrentUserId()));
-
-        chatRef.updateChildren(hashMap);
+    private void updateChatList() {
+        DatabaseReference chatRef = chatsRef.child(currentUserId).child(receiverId);
+        chatRef.child("lastMessage").setValue(System.currentTimeMillis());
+        chatRef.child("seen").setValue(false);
     }
 
     private void readMessages() {
         messageList = new ArrayList<>();
+        messagesAdapter = new MessagesAdapter(ChatActivity.this, messageList);
+        recyclerView.setAdapter(messagesAdapter);
 
         messagesRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 messageList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Message message = snapshot.getValue(Message.class);
-                    if (message.getReceiver().equals(currentUserId) && message.getSender().equals(receiverId) ||
-                            message.getReceiver().equals(receiverId) && message.getSender().equals(currentUserId)) {
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Message message = snap.getValue(Message.class);
+                    if (message != null && (message.getReceiver().equals(currentUserId) && message.getSender().equals(receiverId) ||
+                            message.getReceiver().equals(receiverId) && message.getSender().equals(currentUserId))) {
                         messageList.add(message);
                     }
                 }
-
-                messagesAdapter = new MessagesAdapter(ChatActivity.this, messageList);
-                recyclerView.setAdapter(messagesAdapter);
+                messagesAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (seenListener != null) {
+            messagesRef.removeEventListener(seenListener);
+        }
     }
 }

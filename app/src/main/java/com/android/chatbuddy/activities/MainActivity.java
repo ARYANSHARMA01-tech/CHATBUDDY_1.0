@@ -1,9 +1,18 @@
 package com.android.chatbuddy.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,12 +20,27 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import com.android.chatbuddy.R;import com.android.chatbuddy.fragments.ChatsFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.chatbuddy.R;
+import com.android.chatbuddy.adapters.MessagesAdapter;
+import com.android.chatbuddy.fragments.ChatsFragment;
 import com.android.chatbuddy.fragments.SettingsFragment;
 import com.android.chatbuddy.fragments.UsersFragment;
+import com.android.chatbuddy.models.Message;
+import com.android.chatbuddy.models.User;
 import com.android.chatbuddy.utils.FirebaseUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -26,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private SettingsFragment settingsFragment;
     private SearchView searchView;
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,14 +70,17 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
-            if (item.getItemId() == R.id.nav_chats) {
-                selectedFragment = chatsFragment;
-            } else if (item.getItemId() == R.id.nav_users) {
-                selectedFragment = usersFragment;
-            } else if (item.getItemId() == R.id.nav_settings) {
-                selectedFragment = settingsFragment;
+            switch (item.getItemId()) {
+                case R.id.nav_chats:
+                    selectedFragment = chatsFragment;
+                    break;
+                case R.id.nav_users:
+                    selectedFragment = usersFragment;
+                    break;
+                case R.id.nav_settings:
+                    selectedFragment = settingsFragment;
+                    break;
             }
-
             if (selectedFragment != null) {
                 loadFragment(selectedFragment);
             }
@@ -73,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
         MenuItem searchItem = menu.findItem(R.id.action_search);
         if (searchItem != null) {
             searchView = (SearchView) searchItem.getActionView();
@@ -100,19 +127,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_logout) {
-            FirebaseUtils.logout();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
-            return true;
-        } else if (id == R.id.action_profile) {
-            loadFragment(new SettingsFragment());  // Profile moved to settings
-            return true;
-        } else if (id == R.id.action_signup) {
-            showSignupDialog();
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_logout:
+                FirebaseUtils.logout();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                finish();
+                return true;
+            case R.id.action_profile:
+                loadFragment(new SettingsFragment());
+                return true;
+            case R.id.action_signup:
+                showSignupDialog();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
