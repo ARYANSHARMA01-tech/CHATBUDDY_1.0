@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="btn_send" type="id" />
+    <item name="send_button" type="id" />
+    <item name="profile_button" type="id" />
+    <item name="signup_button" type="id" />
+    <item name="action_profile" type="id" />
+    <item name="action_signup" type="id" />
+</resources>

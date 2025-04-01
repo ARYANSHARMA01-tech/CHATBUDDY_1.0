@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design Color Palette -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray_light">#F5F5F5</color>  <!-- Light gray -->
+    <color name="gray_dark">#616161</color>  <!-- Dark gray -->
+    <color name="gray_medium">#BDBDBD</color> <!-- Medium gray -->
+
+    <!-- ChatBuddy App Colors -->
+    <color name="colorPrimary">#6750A4</color>       <!-- Main brand purple -->
+    <color name="colorPrimaryDark">#463770</color>   <!-- Darker purple -->
+    <color name="colorAccent">#FFD8BDFF</color>      <!-- Light purple accent -->
+    <color name="colorSecondary">#03DAC5</color>     <!-- Teal for secondary actions -->
+    <color name="colorTertiary">#FF4081</color>      <!-- Pink for tertiary actions -->
+
+    <!-- Dark Mode Variants -->
+    <color name="colorPrimaryDarkMode">#2C1E5F</color>  <!-- Dark mode primary -->
+    <color name="colorAccentDarkMode">#B39DDB</color>  <!-- Dark mode accent -->
+    <color name="backgroundDark">#121212</color>  <!-- Dark mode background -->
+    <color name="surfaceDark">#1E1E1E</color>  <!-- Dark mode surface -->
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1C1B1F</color>      <!-- On surface high-emphasis -->
+    <color name="text_secondary">#49454F</color>    <!-- On surface medium-emphasis -->
+    <color name="text_tertiary">#CAC4D0</color>     <!-- On surface disabled -->
+    <color name="text_on_primary">#FFFFFF</color>   <!-- White text on primary color -->
+    <color name="text_on_secondary">#000000</color>  <!-- Black text on secondary -->
+    <color name="text_hint">#9E9E9E</color>  <!-- Hint text color -->
+
+    <!-- Background Colors -->
+    <color name="background">#FFFBFE</color>         <!-- Light background -->
+    <color name="surface">#FFFFFF</color>            <!-- Card surfaces -->
+    <color name="error">#B3261E</color>              <!-- Error color -->
+    <color name="success">#4CAF50</color>            <!-- Success green -->
+    <color name="warning">#FFC107</color>            <!-- Warning amber -->
+
+    <!-- Message Bubble Colors -->
+    <color name="sent_message">#EADDFF</color>       <!-- Light purple for sent messages -->
+    <color name="received_message">#FFFFFF</color>   <!-- White for received messages -->
+    <color name="message_text_dark">#1C1B1F</color> <!-- Dark text for messages -->
+    <color name="message_text_light">#FFFFFF</color> <!-- Light text for messages -->
+
+    <!-- Status Colors -->
+    <color name="online">#4CAF50</color>             <!-- Green for online status -->
+    <color name="offline">#9E9E9E</color>           <!-- Gray for offline status -->
+    <color name="busy">#D32F2F</color>              <!-- Red for busy status -->
+    <color name="typing">#FFC107</color>            <!-- Amber for typing indicator -->
+
+    <!-- Button Colors -->
+    <color name="button_normal">#6750A4</color>
+    <color name="button_pressed">#463770</color>
+    <color name="button_disabled">#CAC4D0</color>
+    <color name="button_text">#FFFFFF</color>
+
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#6750A4</color>
+    <color name="gradient_middle">#03DAC5</color>
+    <color name="gradient_end">#FF4081</color>
+    <color name="primaryColor">#6750A4</color>
+    <color name="light_gray">#D3D3D3</color>
+
+
+
+    <!-- Navigation Bar Colors -->
+    <color name="nav_icon_color">#FFFFFF</color>      <!-- Icons in bottom nav -->
+    <color name="nav_text_color">#E0E0E0</color>      <!-- Text in bottom nav -->
+    <color name="nav_background">#121212</color>     <!-- Background color for bottom nav -->
+
+</resources>
